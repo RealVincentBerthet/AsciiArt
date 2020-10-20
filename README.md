@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/github/license/RealVincentBerthet/ASCIIArt?style=flat-square)](https://opensource.org/licenses/MIT)
 
 ## Abstract
-
+@TODO
 ## Environment configuration (Conda)
 ### Import environment
 ~~You can directly use exported environment in `./conda/` by running the following command `conda env create -f conda/win.yml`~~ 
