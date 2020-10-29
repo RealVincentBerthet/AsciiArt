@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""asciiArt.py: AsciiArt program"""
+"""main.py: AsciiArt program"""
 __author__      = 'Vincent Berthet'
 __license__     = 'MIT'
 __email__       = 'vincent.berthet42@gmail.com'
