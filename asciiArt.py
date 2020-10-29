@@ -36,7 +36,12 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def preProcess(src):
+def pre_process(src):
+    """
+    pre_process function return resized grayscale input image.
+
+    :return: processed image
+    """
     # Pre-process input image
     if(isinstance(src, str)):
         img = cv.imread(src)
@@ -48,15 +53,37 @@ def preProcess(src):
 
     return img
 
-def toTxt(src,dictionnary,path=None):
+def write_txt(source,output):
     """
-    toTxt function process an image to create an ASCII Art text file
+    write_txt function write output file as text file
+
+    :param source: source text to write
+    :param output: output path
+    """
+    (file, ext) = os.path.splitext(os.path.basename(output))
+    if file=='' or ext=='' : 
+        # set default path
+        path='output/'+os.path.splitext(os.path.basename(opt.input))[0]+'-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+'.txt'
+    else:
+        path=output
+
+    if not os.path.dirname(path)=='' and not os.path.exists(os.path.dirname(path)):
+        # directory doesn't exist
+        os.makedirs(os.path.dirname(path))
+    
+    output_file = open(path, 'w')
+    output_file.write(source)
+    output_file.close()
+    print('[TXT]',path,'saved')
+
+def to_txt(src,dictionnary):
+    """
+    to_txt function process an image to create an ASCII Art text file
 
     :param img: source image in grayscale 8-bits C1
     :param dictionnary: ASCII char list used to encode pixels value
-    :param path: path to the output file
     """
-    img=preProcess(src)
+    img=pre_process(src)
     text=''
     for i in range(img.shape[0]):
         for j in range(img.shape[1]):
@@ -64,23 +91,39 @@ def toTxt(src,dictionnary,path=None):
             text+=dictionnary[index]
         text+='\n'
     
-    if not opt.unsave and not path==None:
-        output_file = open(path, 'w')
-        output_file.write(text)
-        output_file.close()
-        print('[TXT]',path,'saved')
-
     return text
 
-def toImg(src,dictionnary,path=None):
+def write_img(source,output):
     """
-    toImg function process an image to create an ASCII Art image file
+    write_img function write output file as image file (grayscale 8-bits C1)
+
+    :param source: source image to write
+    :param output: output path
+    """
+    (file, ext) = os.path.splitext(os.path.basename(output))
+    if file=='' or ext=='' : 
+        # set default path
+        ext='.txt' if ext=='' and output else '.jpg'
+        path='output/'+os.path.splitext(os.path.basename(opt.input))[0]+'-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+ext
+    else:
+        path=output
+
+    if not os.path.dirname(path)=='' and not os.path.exists(os.path.dirname(path)):
+        # directory doesn't exist
+        os.makedirs(os.path.dirname(path))
+
+    source.save(path)
+    print('[IMG]',path,'saved')
+
+def to_img(src,dictionnary,output=None):
+    """
+    to_img function process an image to create an ASCII Art image file
 
     :param img: source image in grayscale 8-bits C1
     :param dictionnary: ASCII char list used to encode pixels value
-    :param path: path to the output file
+    :param output: path to the output file
     """
-    img=preProcess(src)
+    img=pre_process(src)
 
     font = ImageFont.truetype(opt.font, size=opt.fontSize)
     font_width, font_height = font.getsize('X')
@@ -93,10 +136,6 @@ def toImg(src,dictionnary,path=None):
         for j in range(img.shape[1]):
             index=int(img[i,j]*len(dictionnary)/256)
             draw.text((j*font_width, i * font_height), dictionnary[index], fill=255 - opt.background, font=font)
-
-    if not opt.unsave and not path==None :
-        output_file.save(path)
-        print('[IMG]',path,'saved')
 
     return output_file
 
@@ -111,38 +150,44 @@ def main(opt):
         
     # Set output
     (ifile, iext) = os.path.splitext(os.path.basename(opt.input))
-    (file, ext) = os.path.splitext(os.path.basename(opt.output))
-    if file=='' or ext=='' : 
-        ext='.txt' if ext=='' and opt.txt else '.jpg'
-        path='output/'+os.path.splitext(os.path.basename(opt.input))[0]+'-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+ext
-    else:
-        path=opt.output
-
-    if not os.path.dirname(path)=='' and not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path))
         
     if iext=='.jpg' or iext=='.png' or iext=='.jpeg':
         if opt.txt:
-            art=toTxt(opt.input,dictionnary,path)
+            art=to_txt(opt.input,dictionnary)
             if opt.debug :
                 print(art)
+            if not opt.unsave:
+                write_txt(art,opt.output)
         else:
-            art=toImg(opt.input,dictionnary,path)
+            art=to_img(opt.input,dictionnary)
             if opt.debug :
                 art.show()
+            if not opt.unsave:
+                write_img(art,opt.output)
     else:
-        print('[INFO] Use video as the input (video file or streaming from camera)')
-        print('[INFO] To help realtime conversion : only image to .txt will be done, save output is disabled')
         camera=Camera(opt.input)
+        print('[INFO] Use video as the input (video file or streaming from camera)')
+        print('[INFO] To help realtime conversion : only image to .txt will be display')
+        print('[INFO] You can press "s" to save a shot from the video input')
+        input('Press "Enter" to start...')
+
         while True:
             frame=camera.getFrame()
-            if frame.all() :
-                break
-            else:
-                cv.imshow('Source',frame)
-                cv.waitKey(1)
-                art=toTxt(frame,dictionnary)
+            if frame is not None:
+                art=to_txt(frame,dictionnary)
                 print(art)
+                cv.imshow('Source (press "s" save a shot) (press "q" to leave)',frame)
+                if  cv.waitKey(1) & 0xFF == ord('s'):
+                    art=to_img(frame,dictionnary,opt.output)
+                    if opt.debug :
+                        art.show()
+                    if not opt.unsave:
+                        write_img(art,opt.output)
+
+                camera.checkKey('q')
+            else:
+                # end of video stream
+                break
 
 if __name__ == '__main__':
     opt = get_args()

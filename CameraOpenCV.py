@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""CameraOpenCV.py: Object to manage OpenCV camera"""
+__author__      = 'Vincent Berthet'
+__license__     = 'MIT'
+__email__       = 'vincent.berthet42@gmail.com'
+__website__     = 'https://realvincentberthet.github.io/vberthet/'
+
 import cv2 as cv
 import numpy as np
 import glob
@@ -6,14 +14,10 @@ from datetime import datetime
 class Camera:
     def __init__(self,camera_stream=0,calibration_file=None):
         # Create a VideoCapture object
-        if isinstance(camera_stream, int):
-            #Capture from device camera
-            print('index')
-            self.CAP=cv.VideoCapture(camera_stream,cv.CAP_DSHOW)
-        else : 
-            # Capture from loaded video
-
-            self.CAP=cv.VideoCapture(str(camera_stream))
+        if str.isdigit(str(camera_stream)) :
+            self.CAP = cv.VideoCapture(int(camera_stream),cv.CAP_DSHOW)
+        else :
+            self.CAP = cv.VideoCapture(str(camera_stream))
 
         # Set calibration if it has been saved
         if not calibration_file==None :
@@ -24,7 +28,6 @@ class Camera:
         self.CAP.release()
 
     def getFrame(self,loop=False):
-        frame=None
         # Capture frame-by-frame
         if self.CAP.isOpened() :
             ret, frame = self.CAP.read()
@@ -33,9 +36,15 @@ class Camera:
                     self.CAP.set(cv.CAP_PROP_POS_FRAMES, 0)
                     return self.getFrame()
         else:
-            print('Unable to read camera feed. ')
-
+            print('[ERROR] Unable to read camera feed.')
+        
         return frame
+        
+    def checkKey(self,key='q'):
+        if  cv.waitKey(1) & 0xFF == ord(str(key)):
+            cv.destroyAllWindows()
+            quit()
+
 
     def getCap(self):
         return self.CAP

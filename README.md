@@ -48,6 +48,6 @@ Output can be a text file (*.txt*) or an image (*.jpg*, *.png*). You can tune th
 **IMG :** `python asciiArt.py -i sample.jpg -o sample.png -r 256 -c 256 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
 
 #### Using video input
-**Device Camera :** `python asciiArt.py -i 0 -r 100 -c 100 -d vberthet`
+**Device Camera :** `python asciiArt.py -i 0 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
 
-**Video File :** `python asciiArt.py -i sample.mp4 -r 100 -c 100 -d vberthet`
+**Video File :** `python asciiArt.py -i sample.mp4 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
