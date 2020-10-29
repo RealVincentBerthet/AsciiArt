@@ -67,7 +67,7 @@ def write_txt(source,output):
     else:
         path=output
 
-    if not os.path.dirname(path)=='' and not os.path.exists(os.path.dirname(path)):
+    if os.path.dirname(path) and not os.path.exists(os.path.dirname(path)):
         # directory doesn't exist
         os.makedirs(os.path.dirname(path))
     
@@ -108,7 +108,7 @@ def write_img(source,output):
     else:
         path=output
 
-    if not os.path.dirname(path)=='' and not os.path.exists(os.path.dirname(path)):
+    if os.path.dirname(path) and not os.path.exists(os.path.dirname(path)):
         # directory doesn't exist
         os.makedirs(os.path.dirname(path))
 
