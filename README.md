@@ -26,7 +26,7 @@ Output can be a text file (*.txt*) or an image (*.jpg*, *.png*). You can tune th
 
 ## Scripts
 ### Description
-* [asciiArt.py](./asciiArt.py), Main script to generate ASCII Art from a source image. You can override default parameters with the following argurments.
+* [main.py](./main.py), Main script to generate ASCII Art from a source image. You can override default parameters with the following argurments.
 
     * `-i, --input` : Path to the input image (can be a video or you camera)
     * `-o, --output` : Path to the output file
@@ -40,14 +40,16 @@ Output can be a text file (*.txt*) or an image (*.jpg*, *.png*). You can tune th
     * `--txt` : Force output to *.txt* file
     * `--unsave` : Force to unsave the output file
 
+* [CameraOpenCV.py](./CameraOpenCV.py), script use to manage OpenCV camera object
+
 
 ### Run 
 #### Using image input
-**TXT :** `python asciiArt.py -i sample.jpg -o sample.txt -r 256 -c 256 -d vberthet --debug --txt`
+**TXT :** `python main.py -i sample.jpg -o sample.txt -r 256 -c 256 -d vberthet --debug --txt`
 
-**IMG :** `python asciiArt.py -i sample.jpg -o sample.png -r 256 -c 256 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
+**IMG :** `python main.py -i sample.jpg -o sample.png -r 256 -c 256 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
 
 #### Using video input
-**Device Camera :** `python asciiArt.py -i 0 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
+**Device Camera :** `python main.py -i 0 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
 
-**Video File :** `python asciiArt.py -i sample.mp4 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
+**Video File :** `python main.py -i sample.mp4 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
