@@ -22,7 +22,7 @@ Output can be a text file (*.txt*) or an image (*.jpg*, *.png*). You can tune th
 `conda install -c conda-forge opencv`
 
 [Pillow (8.0.0)](https://anaconda.org/conda-forge/pillow)
-`conda install -c conda-forge pillow `
+`conda install -c conda-forge pillow`
 
 ## Scripts
 ### Description
@@ -32,24 +32,25 @@ Output can be a text file (*.txt*) or an image (*.jpg*, *.png*). You can tune th
     * `-o, --output` : Path to the output file
     * `-r, --rows` : Number of ASCII rows
     * `-c, --columns` : Number of ASCII columns
-    * `-d, --dictionnary` : Choose a dictionnary to use (simple, complex, vberthet)
+    * `-d, --dictionnary` : Choose a dictionnary to use [simple, complex, vberthet]
     * `-f, --font` : [IMG only] Font to use
     * `-fs, --fontSize` : [IMG only] Size of the font
     * `-bg, --background` : [IMG only] Background color
-    * `--debug` : Enable debug and show results
+    * `--show` : Show result
     * `--txt` : Force output to *.txt* file
     * `--unsave` : Force to unsave the output file
+    * `--log` : Set level of logging [DEBUG, INFO, WARNING, ERROR, CRITICAL]
 
 * [CameraOpenCV.py](./CameraOpenCV.py), script use to manage OpenCV camera object
 
 
 ### Run 
 #### Using image input
-**TXT :** `python main.py -i sample.jpg -o sample.txt -r 256 -c 256 -d vberthet --debug --txt`
+**TXT :** `python main.py -i sample.jpg -o sample.txt -r 256 -c 256 -d vberthet --txt --show`
 
-**IMG :** `python main.py -i sample.jpg -o sample.png -r 256 -c 256 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
+**IMG :** `python main.py -i sample.jpg -o sample.png -r 256 -c 256 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --show`
 
 #### Using video input
-**Device Camera :** `python main.py -i 0 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
+**Device Camera :** `python main.py -i 0 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --show`
 
-**Video File :** `python main.py -i sample.mp4 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --debug`
+**Video File :** `python main.py -i sample.mp4 -r 100 -c 100 -d vberthet -f fonts/deja-vu/DejaVuSansMono-Bold.ttf -fs 8 -bg 255 --show`

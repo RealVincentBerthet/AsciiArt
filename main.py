@@ -10,9 +10,15 @@ import cv2 as cv
 import numpy as np
 import argparse
 import os
+import logging
+import logging.config
 from PIL import Image, ImageFont, ImageDraw, ImageOps
 from datetime import datetime
 from CameraOpenCV import Camera
+
+# Logging
+logging.config.fileConfig('logger.conf')
+log = logging.getLogger()
 
 def get_args():
     """
@@ -29,9 +35,10 @@ def get_args():
     parser.add_argument('-f','--font', type=str, default='fonts/deja-vu/DejaVuSansMono-Bold.ttf', choices=['fonts/deja-vu/DejaVuSansMono-Bold.ttf','fonts/caviar-dreams/CaviarDreams_Bold.ttf'], help='[IMG only] Font to use')
     parser.add_argument('-fs','--fontSize',type=int,default=10,help='[IMG only] Size of the font')
     parser.add_argument('-bg','--background', type=int, default=255, help='[IMG only] Background color')
-    parser.add_argument('--debug', default=False, action='store_true', help='Enable debug and show results')
+    parser.add_argument('--show',default=False, action='store_true', help='Display the result')
     parser.add_argument('--txt', default=False, action='store_true', help='Force output to .txt file')
     parser.add_argument('--unsave', default=False, action='store_true', help='Force to unsave the output file')
+    parser.add_argument('--log',type=str, default='INFO', choices=['DEBUG', 'INFO', 'WARNING','ERROR','CRITICAL'], help='Choose logging level')
 
     args = parser.parse_args()
     return args
@@ -74,7 +81,7 @@ def write_txt(source,output):
     output_file = open(path, 'w')
     output_file.write(source)
     output_file.close()
-    print('[TXT]',path,'saved')
+    log.info('TXT - {0} saved'.format(path))
 
 def to_txt(src,dictionnary):
     """
@@ -113,7 +120,7 @@ def write_img(source,output):
         os.makedirs(os.path.dirname(path))
 
     source.save(path)
-    print('[IMG]',path,'saved')
+    log.info('IMG - {0} saved'.format(path))
 
 def to_img(src,dictionnary,output=None):
     """
@@ -154,21 +161,21 @@ def main(opt):
     if iext=='.jpg' or iext=='.png' or iext=='.jpeg':
         if opt.txt:
             art=to_txt(opt.input,dictionnary)
-            if opt.debug :
+            if opt.show :
                 print(art)
             if not opt.unsave:
                 write_txt(art,opt.output)
         else:
             art=to_img(opt.input,dictionnary)
-            if opt.debug :
+            if opt.show :
                 art.show()
             if not opt.unsave:
                 write_img(art,opt.output)
     else:
         camera=Camera(opt.input)
-        print('[INFO] Use video as the input (video file or streaming from camera)')
-        print('[INFO] To help realtime conversion : only image to .txt will be display')
-        print('[INFO] You can press "s" to save a shot from the video input')
+        log.info('Use video as the input (video file or streaming from camera)')
+        log.info('To help realtime conversion : only image to .txt will be display')
+        log.info('You can press "s" to save a shot from the video input')
         input('Press "Enter" to start...')
 
         while True:
@@ -179,7 +186,7 @@ def main(opt):
                 cv.imshow('Source (press "s" save a shot) (press "q" to leave)',frame)
                 if  cv.waitKey(1) & 0xFF == ord('s'):
                     art=to_img(frame,dictionnary,opt.output)
-                    if opt.debug :
+                    if opt.show :
                         art.show()
                     if not opt.unsave:
                         write_img(art,opt.output)

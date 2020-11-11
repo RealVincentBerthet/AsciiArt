@@ -12,22 +12,33 @@ import glob
 from datetime import datetime
 import os
 import shutil
+import logging
+import logging.config
+
+# Logging
+logging.config.fileConfig('logger.conf')
+log = logging.getLogger()
 
 class Camera:
-    def __init__(self,camera_stream=0,calibration_file=None):
+    def __init__(self,camera_stream=0,calibration_file=None,resolution=None):
         # Create a VideoCapture object
         if str.isdigit(str(camera_stream)) :
             self.CAP = cv.VideoCapture(int(camera_stream),cv.CAP_DSHOW)
         else :
             self.CAP = cv.VideoCapture(str(camera_stream))
 
-        if not self.getCapFps() > 0:
-            print('[Camera][WARNING] Camera fps are {0}'.format(self.getCapFps()))
+        if self.getCapFps() > 0:
+            log.info('Camera fps are {0}'.format(self.getCapFps()))
+        
         # Set calibration if it has been saved
         if not calibration_file==None :
             with np.load(str(calibration_file)) as X:
-                print('[Camera][INFO] Calibration file "'+calibration_file+'" loaded')
+                log.info('Calibration file "'+calibration_file+'" loaded')
                 self.mtx, self.dist, _, _ = [X[i] for i in ('mtx','dist','rvecs','tvecs')]
+        
+        # Force resolution if specified
+        if not resolution==None :
+            self.setResolution(resolution[0],resolution[1])
 
     def __del__(self):
         self.CAP.release()
@@ -46,12 +57,15 @@ class Camera:
                     # End of video reached reset to the first frame
                     self.CAP.set(cv.CAP_PROP_POS_FRAMES, 0)
                     return self.getFrame()
+
+           
         else:
-            print('[Camera][ERROR] Unable to read camera feed.')
+            log.error('Unable to read camera feed.')
 
         return frame
-        
-    def checkKey(self,key='q'):
+
+    @staticmethod  
+    def checkKey(key='q'):
         """
         checkKey Method check if key is pressed to break loop
 
@@ -84,7 +98,7 @@ class Camera:
         self.CAP.set(cv.CAP_PROP_FRAME_WIDTH, int(x))
         self.CAP.set(cv.CAP_PROP_FRAME_HEIGHT, int(y))
         x,y=self.getResolution()
-        print('[Camera][INFO] Camera resolution is '+str(x)+'x'+str(y))
+        log.info('Camera resolution is '+str(x)+'x'+str(y))
 
     def getNbFrames(self):
         """
@@ -116,9 +130,9 @@ class Camera:
             for frame in stream:
                 out.write(frame)
             out.release()
-            print('[Camera][INFO] Record of '+str(len(stream))+' frames successful : '+str(output))    
+            log.info('Record of '+str(len(stream))+' frames successful : '+str(output))    
         else : 
-            print('[Camera][ERROR] Stream is empty')
+            log.error('Stream is empty')
 
         return output
 
@@ -135,7 +149,7 @@ class Camera:
         """
         # Check frame interval
         if frame_end<frame_start :
-            print('[Camera][ERROR] frame_start should be < than frame_end')
+            log.error('Frame_start should be < than frame_end')
             quit()
 
         # Check if directory exist
@@ -152,29 +166,29 @@ class Camera:
             frame_start=int(cam.get(cv.CAP_PROP_FRAME_COUNT)*frame_start)
             frame_end=int(cam.get(cv.CAP_PROP_FRAME_COUNT)*frame_end)
             interval=int((frame_end-frame_start)/nb_cut)
-            print('[Camera][INFO] Video loaded "{0}" have {1} frames'.format(stream,str(cam.get(cv.CAP_PROP_FRAME_COUNT))))
-            print('[Camera][INFO] Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
+            log.info('Video loaded "{0}" have {1} frames'.format(stream,str(cam.get(cv.CAP_PROP_FRAME_COUNT))))
+            log.info('Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
 
             # Cut stream
             for i in range(nb_cut):
                 ret, frame = cam.read()
                 cut=output_dir+'cut_'+str(i)+'.jpg'
                 cv.imwrite(cut, frame)
-                print(cut)
+                log.info(cut)
         else:
             # Load from stream array
             frame_start=int(len(stream)*frame_start)
             frame_end=int(len(stream)*frame_end)
             interval=int((frame_end-frame_start)/nb_cut)
-            print('[Camera][INFO] stream have {0} frames'.format(len(stream)))
-            print('[Camera][INFO] Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
+            log.info('Stream have {0} frames'.format(len(stream)))
+            log.info('{0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
 
             # Cut stream
             for i in range(nb_cut):
                 frame=stream[int(frame_start+i*interval)]
                 cut=output_dir+'cut_'+str(i)+'.jpg'
                 cv.imwrite(cut, frame)
-                print(cut)
+                log.info(cut)
 
         return output_dir
 
@@ -224,9 +238,8 @@ class Camera:
         for i in range(len(objpoints)):
             point, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
             error += cv.norm(imgpoints[i], point, cv.NORM_L2) / len(point)
-
-        print("[Camera][INFO] Total error: ", error / len(objpoints))
-
+            
+        log.info('Total error: ', error / len(objpoints))
         # Load one of the test images
         img2 = cv.imread(images[0])
         img2 = cv.resize(img2,(img.shape[1],img.shape[0]))
@@ -242,7 +255,7 @@ class Camera:
         # Display the final result
         cv.imshow('chess', np.hstack((img2, undistortedImg)))
         cv.waitKey(0)
-        print('[Camera][INFO] Calibration successful')
+        log.info('Calibration successful')
 
         return output
 
@@ -291,7 +304,8 @@ class Camera:
                 if k == ord('s'):
                     out='calibration-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+'.png'
                     cv.imwrite(out, img)
-                    print('[Camera][INFO] '+out+'" saved')
+                    log.info(out+'" saved')
+
         cv.destroyAllWindows()
         
 # *** TEST
