@@ -238,9 +238,8 @@ class Camera:
         for i in range(len(objpoints)):
             point, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
             error += cv.norm(imgpoints[i], point, cv.NORM_L2) / len(point)
-
+            
         log.info('Total error: ', error / len(objpoints))
-
         # Load one of the test images
         img2 = cv.imread(images[0])
         img2 = cv.resize(img2,(img.shape[1],img.shape[0]))
@@ -306,6 +305,7 @@ class Camera:
                     out='calibration-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+'.png'
                     cv.imwrite(out, img)
                     log.info(out+'" saved')
+
         cv.destroyAllWindows()
         
 # *** TEST
