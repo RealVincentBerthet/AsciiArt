@@ -22,10 +22,11 @@ class Camera:
             self.CAP = cv.VideoCapture(str(camera_stream))
 
         if not self.getCapFps() > 0:
-            print('[WARNING] Camera fps are {0}'.format(self.getCapFps()))
+            print('[Camera][WARNING] Camera fps are {0}'.format(self.getCapFps()))
         # Set calibration if it has been saved
         if not calibration_file==None :
             with np.load(str(calibration_file)) as X:
+                print('[Camera][INFO] Calibration file "'+calibration_file+'" loaded')
                 self.mtx, self.dist, _, _ = [X[i] for i in ('mtx','dist','rvecs','tvecs')]
 
     def __del__(self):
@@ -46,7 +47,7 @@ class Camera:
                     self.CAP.set(cv.CAP_PROP_POS_FRAMES, 0)
                     return self.getFrame()
         else:
-            print('[ERROR] Unable to read camera feed.')
+            print('[Camera][ERROR] Unable to read camera feed.')
 
         return frame
         
@@ -75,6 +76,15 @@ class Camera:
         :return: fps rate
         """
         return self.CAP.get(cv.CAP_PROP_FPS)
+
+    def getResolution(self):
+        return self.CAP.get(cv.CAP_PROP_FRAME_WIDTH),self.CAP.get(cv.CAP_PROP_FRAME_HEIGHT)
+
+    def setResolution(self, x,y):
+        self.CAP.set(cv.CAP_PROP_FRAME_WIDTH, int(x))
+        self.CAP.set(cv.CAP_PROP_FRAME_HEIGHT, int(y))
+        x,y=self.getResolution()
+        print('[Camera][INFO] Camera resolution is '+str(x)+'x'+str(y))
 
     def getNbFrames(self):
         """
@@ -106,9 +116,9 @@ class Camera:
             for frame in stream:
                 out.write(frame)
             out.release()
-            print('[INFO] Record of '+str(len(stream))+' frames successful : '+str(output))    
+            print('[Camera][INFO] Record of '+str(len(stream))+' frames successful : '+str(output))    
         else : 
-            print('[ERROR] Stream is empty')
+            print('[Camera][ERROR] Stream is empty')
 
         return output
 
@@ -125,7 +135,7 @@ class Camera:
         """
         # Check frame interval
         if frame_end<frame_start :
-            print('[ERROR] frame_start should be < than frame_end')
+            print('[Camera][ERROR] frame_start should be < than frame_end')
             quit()
 
         # Check if directory exist
@@ -142,8 +152,8 @@ class Camera:
             frame_start=int(cam.get(cv.CAP_PROP_FRAME_COUNT)*frame_start)
             frame_end=int(cam.get(cv.CAP_PROP_FRAME_COUNT)*frame_end)
             interval=int((frame_end-frame_start)/nb_cut)
-            print('[INFO] Video loaded "{0}" have {1} frames'.format(stream,str(cam.get(cv.CAP_PROP_FRAME_COUNT))))
-            print('[INFO] Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
+            print('[Camera][INFO] Video loaded "{0}" have {1} frames'.format(stream,str(cam.get(cv.CAP_PROP_FRAME_COUNT))))
+            print('[Camera][INFO] Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
 
             # Cut stream
             for i in range(nb_cut):
@@ -156,8 +166,8 @@ class Camera:
             frame_start=int(len(stream)*frame_start)
             frame_end=int(len(stream)*frame_end)
             interval=int((frame_end-frame_start)/nb_cut)
-            print('[INFO] stream have {0} frames'.format(len(stream)))
-            print('[INFO] Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
+            print('[Camera][INFO] stream have {0} frames'.format(len(stream)))
+            print('[Camera][INFO] Cut {0} times, from frame {1} to frame {2}'.format(str(nb_cut),str(frame_start),str(frame_end)))
 
             # Cut stream
             for i in range(nb_cut):
@@ -215,7 +225,7 @@ class Camera:
             point, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
             error += cv.norm(imgpoints[i], point, cv.NORM_L2) / len(point)
 
-        print("Total error: ", error / len(objpoints))
+        print("[Camera][INFO] Total error: ", error / len(objpoints))
 
         # Load one of the test images
         img2 = cv.imread(images[0])
@@ -232,7 +242,7 @@ class Camera:
         # Display the final result
         cv.imshow('chess', np.hstack((img2, undistortedImg)))
         cv.waitKey(0)
-        print('Calibration successful')
+        print('[Camera][INFO] Calibration successful')
 
         return output
 
@@ -281,7 +291,7 @@ class Camera:
                 if k == ord('s'):
                     out='calibration-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+'.png'
                     cv.imwrite(out, img)
-                    print('"'+out+'" saved')
+                    print('[Camera][INFO] '+out+'" saved')
         cv.destroyAllWindows()
         
 # *** TEST
@@ -297,7 +307,7 @@ def test():
         frame=camera.getFrame()
         if frame is not None:
             stream.append(frame)
-            cv.imshow('[Capture] stream (press "q" to end capture)',frame)
+            cv.imshow('[Camera] stream (press "q" to end capture)',frame)
             if cv.waitKey(1) & 0xFF == ord('q'):
                 cv.destroyAllWindows()
                 break
@@ -309,7 +319,9 @@ def test():
     # [TEST] Cut
     #Camera.cutStream(stream,output_dir=path)
     Camera.cutStream(record,output_dir=path)
+    # [TEST] Create Calibration
+    camera.createCalibrationFile(path,path+'calibration.npz')
     # [TEST] Reconstruction
-    Camera.reconstruction('./calibration','./calibration/calibration.npz')
+    Camera.reconstruction(path,path+'calibration.npz')
 
 #test()
