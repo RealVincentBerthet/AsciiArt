@@ -21,14 +21,18 @@ log = logging.getLogger()
 
 class Camera:
     def __init__(self,camera_stream=0,calibration_file=None,resolution=None):
+        """
+        Class to manage OpenCV capture
+        """
         # Create a VideoCapture object
         if str.isdigit(str(camera_stream)) :
             self.CAP = cv.VideoCapture(int(camera_stream),cv.CAP_DSHOW)
         else :
             self.CAP = cv.VideoCapture(str(camera_stream))
+            log.warning('Video file is used instead of camera')
 
         if self.getCapFps() > 0:
-            log.info('Camera fps are {0}'.format(self.getCapFps()))
+            log.info('Camera fps is {0}'.format(self.getCapFps()))
         
         # Set calibration if it has been saved
         if not calibration_file==None :
@@ -57,15 +61,13 @@ class Camera:
                     # End of video reached reset to the first frame
                     self.CAP.set(cv.CAP_PROP_POS_FRAMES, 0)
                     return self.getFrame()
-
-           
         else:
             log.error('Unable to read camera feed.')
 
         return frame
 
     @staticmethod  
-    def checkKey(key='q'):
+    def checkKey(key=chr(27)):
         """
         checkKey Method check if key is pressed to break loop
 
@@ -73,7 +75,9 @@ class Camera:
         """
         if  cv.waitKey(1) & 0xFF == ord(str(key)):
             cv.destroyAllWindows()
-            quit()
+            return True
+        else :
+            return False
 
     def getCap(self):
         """
@@ -238,8 +242,9 @@ class Camera:
         for i in range(len(objpoints)):
             point, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
             error += cv.norm(imgpoints[i], point, cv.NORM_L2) / len(point)
-            
+
         log.info('Total error: ', error / len(objpoints))
+
         # Load one of the test images
         img2 = cv.imread(images[0])
         img2 = cv.resize(img2,(img.shape[1],img.shape[0]))
@@ -305,7 +310,6 @@ class Camera:
                     out='calibration-'+datetime.now().strftime('%Y-%m-%d_%H%M%S')+'.png'
                     cv.imwrite(out, img)
                     log.info(out+'" saved')
-
         cv.destroyAllWindows()
         
 # *** TEST
@@ -317,14 +321,11 @@ def test():
 
     camera=Camera(0) 
     stream=[]
-    while True:
+    while camera.checkKey('q'):
         frame=camera.getFrame()
         if frame is not None:
             stream.append(frame)
-            cv.imshow('[Camera] stream (press "q" to end capture)',frame)
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                cv.destroyAllWindows()
-                break
+            cv.imshow('[Camera] stream (press "esc" to end capture)',frame)
         else:
             break
 
