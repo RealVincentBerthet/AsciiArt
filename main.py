@@ -176,22 +176,21 @@ def main(opt):
         log.info('Use video as the input (video file or streaming from camera)')
         log.info('To help realtime conversion : only image to .txt will be display')
         log.info('You can press "s" to save a shot from the video input')
+        log.info('You can press "esc" to quit')
         input('Press "Enter" to start...')
 
-        while True:
+        while not camera.checkKey():
             frame=camera.getFrame()
             if frame is not None:
                 art=to_txt(frame,dictionnary)
                 print(art)
-                cv.imshow('Source (press "s" save a shot) (press "q" to leave)',frame)
+                cv.imshow('Source (press "s" save a shot) (press "esc" to leave)',frame)
                 if  cv.waitKey(1) & 0xFF == ord('s'):
                     art=to_img(frame,dictionnary,opt.output)
                     if opt.show :
                         art.show()
                     if not opt.unsave:
                         write_img(art,opt.output)
-
-                camera.checkKey('q')
             else:
                 # end of video stream
                 break
